@@ -1,110 +1,113 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<title>Hello, world!</title>
+</head>
 
-    <title>Hello, world!</title>
-  
-  <script>
+<body>
+	<div class="container mt-4">
+		<div class="row">
+			<div class="col-sm">
+				<h1>Lithium Ebook Highlighted Text Extractor</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="mb-3">
+				<label for="formFile" class="form-label">Select file (Exported from Lithium)</label>
+				<input class="form-control" type="file" id="input-file">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm">
+				<div class="mb-3">
+					<label for="exampleFormControlTextarea1" class="form-label">Content here (HTML Code)</label>
+					<textarea id="input" style="min-height: 100%" class="form-control min-vh-40" id="exampleFormControlTextarea1" rows="4"></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm">
+				<div class="mb-3">
+					<button type="button" class="btn btn-success btn-block" onclick="process()">Process</button>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm">
+				<div class="mb-3">
+					<label for="exampleFormControlTextarea1" class="form-label">Output (Extracted text here)</label>
+					<textarea id="output" style="height: 80%" class="form-control" id="exampleFormControlTextarea1" rows="4"></textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+	<script>
 	function process() {
-	
- var listRegexFrom = [ 
-						[String.raw`^(?!<div class='highlight'>).+`,``], 
-						[String.raw`<div class='highlight'>`,``], 
-						[String.raw`</div>`,``] , 
-						[String.raw`^(?:[\t ]*(?:\r?\n|\r))+`,``], 
-						[String.raw`&nbsp;`,``], 
-						[String.raw`&#10;`,` `], 
-						[String.raw`&#13;`,` `],
-						[String.raw`&#8217;`,`'`], 
-						[String.raw`&#233;`,`è`], 
-						[String.raw`&#224;`,`à`], 
-						[String.raw`&#242;`,`ò`], 
-						[String.raw`&#249;`,`ù`], 
-						[String.raw`&#232;`,`è`], 
-						[String.raw`&#171;`,``], 
-						[String.raw`&#187;`,``], 
-						[String.raw`&#8211;`,``], 
-						[String.raw`&#236;`,`i`], 
-						[String.raw`&#8220;`,``], 
-						[String.raw`&#8221;`,``], 
-						[String.raw`&#236;`,``], 
-						[String.raw`&#236;`,``], 
-						[String.raw`  `,` `], 
-						[String.raw`  `,` `], 
-					];
-
-document.getElementById("output").value = " "
-    let output = document.getElementById("input").value 
- 
-    listRegexFrom.forEach(function(regexFrom) {
-    //alert(regexFrom[0]);
-    //alert(regexFrom[1]);
-	output = output.replace(new RegExp(regexFrom[0], "mg"), regexFrom[1]);
-	//alert(output)
-	document.getElementById("output").value = output
- 
-});
-	
-		
-		
+		var listRegexFrom = [
+			[String.raw `^(?!<div class='highlight'>).+`, ``],
+			[String.raw `<div class='highlight'>`, ``],
+			[String.raw `</div>`, ``],
+			[String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, ``],
+			[String.raw `&nbsp;`, ``],
+			[String.raw `&#10;`, ` `],
+			[String.raw `&#13;`, ` `],
+			[String.raw `&#8217;`, `'`],
+			[String.raw `&#233;`, `è`],
+			[String.raw `&#224;`, `à`],
+			[String.raw `&#242;`, `ò`],
+			[String.raw `&#249;`, `ù`],
+			[String.raw `&#232;`, `è`],
+			[String.raw `&#171;`, ``],
+			[String.raw `&#187;`, ``],
+			[String.raw `&#8211;`, ``],
+			[String.raw `&#236;`, `i`],
+			[String.raw `&#8220;`, ``],
+			[String.raw `&#8221;`, ``],
+			[String.raw `&#236;`, ``],
+			[String.raw `&#236;`, ``],
+			[String.raw `  `, ` `],
+			[String.raw `  `, ` `],
+		];
+		document.getElementById("output").value = " "
+		let output = document.getElementById("input").value
+		document.getElementById("output").value = " "
+		listRegexFrom.forEach(function(regexFrom) {
+			output = output.replace(new RegExp(regexFrom[0], "mg"), regexFrom[1]);
+			document.getElementById("output").value = output
+		});
 	}
-</script>
-  
-  </head>
-    
-  
-  <body>
+	document.getElementById('input-file').addEventListener('change', getFile)
 
+	function getFile(event) {
+		const input = event.target
+		if('files' in input && input.files.length > 0) {
+			document.getElementById("input").value = " "
+			document.getElementById("output").value = " "
+			placeFileContent(document.getElementById('input'), input.files[0]);
+		}
+	}
 
- 
-  <div class="container">
-  <div class="row">
-    <div class="col-sm">
-     <h1>Lithium Ebook Highlighted Text Extractor</h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-sm">
-      <div class="mb-3">
-  <label  for="exampleFormControlTextarea1" class="form-label">Input (Paste HTML exported from Lithium here)</label>
-  <textarea id="input" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-</div>
-    </div>
-  </div>
-  
-  <div class="row">
-    <div class="col-sm">
-      <div class="mb-3">
-  <label for="exampleFormControlTextarea1" class="form-label">Output (Press process button to extract text)</label>
-  <textarea id="output" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-</div>
-    </div>
-  </div>
+	function placeFileContent(target, file) {
+		readFileContent(file).then(content => {
+			target.value = content
+		}).catch(error => console.log(error))
+	}
 
+	function readFileContent(file) {
+		const reader = new FileReader()
+		return new Promise((resolve, reject) => {
+			reader.onload = event => resolve(event.target.result)
+			reader.onerror = error => reject(error)
+			reader.readAsText(file)
+		})
+	}
+	</script>
+</body>
 
-<div class="row">
-    <div class="col-sm">
-      <div class="mb-3">
-    <button type="button" class="btn btn-success  btn-lg" onclick="process()">Process</button>
-</div>
-    </div>
-  </div>
-
-
-  
-  </div>
-  
-	
-
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
-    
-  </body>
 </html>
