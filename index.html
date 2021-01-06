@@ -26,14 +26,15 @@
 			<div class="col-sm">
 				<div class="mb-3">
 					<label for="exampleFormControlTextarea1" class="form-label">Content here (HTML Code)</label>
-					<textarea id="input" style="min-height: 100%" class="form-control min-vh-40" id="exampleFormControlTextarea1" rows="4"></textarea>
+					<textarea id="input" style="min-height: 100%" class="form-control min-vh-40" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
 				</div>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm">
 				<div class="mb-3">
-					<button type="button" class="btn btn-success btn-block" onclick="process()">Process</button>
+					<button type="button" class="btn btn-outline-primary btn-block" onclick="process()">Process</button>
+					<button type="button" class="btn btn-outline-success btn-block" onclick="copy()">Copy to clipboard</button>
 				</div>
 			</div>
 		</div>
@@ -41,7 +42,7 @@
 			<div class="col-sm">
 				<div class="mb-3">
 					<label for="exampleFormControlTextarea1" class="form-label">Output (Extracted text here)</label>
-					<textarea id="output" style="height: 80%" class="form-control" id="exampleFormControlTextarea1" rows="4"></textarea>
+					<textarea id="output" style="height: 80%" class="form-control" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
 				</div>
 			</div>
 		</div>
@@ -63,6 +64,7 @@
 			[String.raw `&#242;`, `ò`],
 			[String.raw `&#249;`, `ù`],
 			[String.raw `&#232;`, `è`],
+			[String.raw `&#200;`, `è`],
 			[String.raw `&#171;`, ``],
 			[String.raw `&#187;`, ``],
 			[String.raw `&#8211;`, ``],
@@ -81,7 +83,9 @@
 			output = output.replace(new RegExp(regexFrom[0], "mg"), regexFrom[1]);
 			document.getElementById("output").value = output
 		});
+		selectField("output");
 	}
+	
 	document.getElementById('input-file').addEventListener('change', getFile)
 
 	function getFile(event) {
@@ -90,6 +94,7 @@
 			document.getElementById("input").value = " "
 			document.getElementById("output").value = " "
 			placeFileContent(document.getElementById('input'), input.files[0]);
+			selectField("input");
 		}
 	}
 
@@ -107,6 +112,19 @@
 			reader.readAsText(file)
 		})
 	}
+	
+	function copy() {
+		selectField("output");
+		document.execCommand("copy");
+		alert("Output copied to clipboard.");
+	}
+	
+	function selectField(fieldId) {
+		var field = document.getElementById(fieldId);
+		field.select();
+		field.setSelectionRange(0, 99999); /* For mobile devices */
+	}
+	
 	</script>
 </body>
 
