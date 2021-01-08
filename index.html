@@ -6,8 +6,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-	<title>Hello, world!</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<title>Lithium Text Extractor</title>
 </head>
 
 <body>
@@ -26,7 +26,7 @@
 		<div class="row">
 			<div class="col-sm">
 				<div class="mb-3">
-					<label for="exampleFormControlTextarea1" class="form-label">Content here (HTML Code)</label>
+					<label for="inputContent" class="form-label">Content here (HTML Code)</label>
 					<textarea id="input" style="min-height: 100%" class="form-control min-vh-40" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
 				</div>
 			</div>
@@ -34,28 +34,20 @@
 		<div class="row">
 			<div class="col-sm">
 				<div class="mb-3">
+					<div class="btn-group" role="group" aria-label="Basic outlined example">
+						<select id="color-dropdown" class="form-select" aria-label="Select color">
+							<option selected>All colors</option>
+						</select>
+					</div>
 					<button type="button" class="btn btn-outline-primary btn-block" onclick="process()">Process</button>
 					<button type="button" class="btn btn-outline-success btn-block" onclick="copy()">Copy to clipboard</button>
-					
-			
-					
-					<div class="btn-group">
-						<button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-							Option: <span class="selection">Option 1</span><span class="caret"></span>
-						</button>
-						<ul class="dropdown-menu" id="color-dropdown">
-							<li><a class="dropdown-item" href="#">All colors</a></li>
-						</ul>
-					</div>
-						
-					
 				</div>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm">
 				<div class="mb-3">
-					<label for="exampleFormControlTextarea1" class="form-label">Output (Extracted text here)</label>
+					<label for="outpuContent" class="form-label">Output (Extracted text here)</label>
 					<textarea id="output" style="height: 80%" class="form-control" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
 				</div>
 			</div>
@@ -64,10 +56,21 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
 	<script>
 	function process() {
-		var listRegexFrom = [
+		let colorSelected = document.getElementById("color-dropdown").value
+		let listRegexNoColor = [
 			[String.raw `^(?!<div class='highlight'>).+`, ``],
 			[String.raw `<div class='highlight'>`, ``],
 			[String.raw `</div>`, ``],
+		];
+		let listRegex1Color = [
+			[String.raw `^(?!(<div class='highlight'>)|(<div class='color')).+`, ``],
+			[String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, ``],
+			[String.raw `(<div class='color' style='background-color: ${colorSelected}'></div>)([\s\S])(<div class='highlight'>)(.*)(</div>)`, '$4'],
+			[String.raw `.*<div class='color'.*`, ``],
+			[String.raw `.*<div class='highlight'>.*`, ``],
+			[String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, ``],
+		];
+		let listRegexFix = [
 			[String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, ``],
 			[String.raw `&nbsp;`, ``],
 			[String.raw `&#10;`, ` `],
@@ -87,22 +90,30 @@
 			[String.raw `&#8221;`, ``],
 			[String.raw `  `, ` `],
 			[String.raw `  `, ` `],
+			[String.raw `(^ )|( $)`, ` `],
 		];
 		document.getElementById("output").value = " "
 		let output = document.getElementById("input").value
 		document.getElementById("output").value = " "
-		listRegexFrom.forEach(function(regexFrom) {
-			output = output.replace(new RegExp(regexFrom[0], "mg"), regexFrom[1]);
-			document.getElementById("output").value = output
+		if(colorSelected.includes("#")) {
+			listRegex1Color.forEach(function(regexText) {
+				output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
+			});
+		} else {
+			listRegexNoColor.forEach(function(regexText) {
+				output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
+			});
+		}
+		listRegexFix.forEach(function(regexText) {
+			output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
 		});
+		document.getElementById("output").value = output
 		selectField("output");
 	}
-	
-	$(".dropdown-menu ul li a").click(function(){
+	$(".dropdown-menu ul li a").click(function() {
 		$(this).parents(".btn-group").find('.selection').text($(this).text());
 		$(this).parents(".btn-group").find('.selection').val($(this).text());
 	});
-	
 	document.getElementById('input-file').addEventListener('change', getFile)
 
 	function getFile(event) {
@@ -111,7 +122,7 @@
 			document.getElementById("input").value = " "
 			document.getElementById("output").value = " "
 			placeFileContent(document.getElementById('input'), input.files[0]);
-			setTimeout(function(){ 
+			setTimeout(function() {
 				selectField("input");
 				setColorFromInput();
 			}, 500);
@@ -130,69 +141,72 @@
 			reader.onload = event => resolve(event.target.result)
 			reader.onerror = error => reject(error)
 			reader.readAsText(file)
-		})	
+		})
 	}
-	
+
 	function copy() {
 		selectField("output");
 		document.execCommand("copy");
 		alert("Output copied to clipboard.");
 	}
-	
+
 	function selectField(fieldId) {
-		var field = document.getElementById(fieldId);
+		let field = document.getElementById(fieldId);
 		field.select();
-		field.setSelectionRange(0, 99999); /* For mobile devices */
+		field.setSelectionRange(0, 999999); /* For mobile devices */
 	}
-	
+
 	function addColorDropdownItem(changeColor, colorItem) {
-		var list = document.getElementById("color-dropdown");      
-        var li = document.createElement("li");
-        var link = document.createElement("a");    
-		link.className = "dropdown-item"
-		if (changeColor) {
-			link.setAttribute("style", "color: " + colorItem + " ");
+		let list = document.getElementById("color-dropdown");
+		let option = document.createElement("option");
+		if(changeColor) {
+			option.setAttribute("style", "background-color: " + colorItem + " ");
 		}
-        var text = document.createTextNode(colorItem);
+		let text = document.createTextNode(colorItem);
 		//alert(colorItem)
-        link.appendChild(text);
-        link.href = "#";
-        li.appendChild(link);
-        list.appendChild(li);
+		option.appendChild(text);
+		list.appendChild(option);
 	}
-	
+
+	function clearColorDropdownItems(changeColor, colorItem) {
+		let list = document.getElementById("color-dropdown");
+		while(list.firstChild) {
+			list.removeChild(list.firstChild);
+		}
+	}
+
 	function setColorFromInput() {
-		var colors = [];
+		clearColorDropdownItems();
+		let colors = [];
 		let input = document.getElementById("input").value
 		input = input.replace(new RegExp(String.raw `^(?!<div class='color' style='background-color).+`, "mg"), ``);
-		input = input.replaceAll(String.raw `<div class='color' style='background-color: `,``)
-		input = input.replaceAll(String.raw `'></div>`,``)
+		input = input.replaceAll(String.raw `<div class='color' style='background-color: `, ``)
+		input = input.replaceAll(String.raw `'></div>`, ``)
 		input = input.replace(new RegExp(String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, "mg"), ``);
-		var char = '\n';
-		var i = j = 0;
-		while ((j = input.indexOf(char, i)) !== -1) {
+		let char = '\n';
+		let i = j = 0;
+		while((j = input.indexOf(char, i)) !== -1) {
 			colors.push(input.substring(i, j).trim());
 			i = j + 1;
 		}
 		let colorsUniq = remove_duplicates(colors)
-		addColorDropdownItem(false,"All colors")
-		for (var i = 0; i < colorsUniq.length; i++){       
-			addColorDropdownItem(true,colorsUniq[i])
+		addColorDropdownItem(false, "All colors")
+		for(let i = 0; i < colorsUniq.length; i++) {
+			addColorDropdownItem(true, colorsUniq[i])
 		}
 	}
-	
+
 	function remove_duplicates(arr) {
-		var obj = {};
-		var ret_arr = [];
-		for (var i = 0; i < arr.length; i++) {
+		let obj = {};
+		let ret_arr = [];
+		for(let i = 0; i < arr.length; i++) {
 			obj[arr[i]] = true;
 		}
-		for (var key in obj) {
+		for(let key in obj) {
 			ret_arr.push(key);
 		}
 		return ret_arr;
 	}
-	
 	</script>
 </body>
 
