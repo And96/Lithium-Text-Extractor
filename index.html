@@ -151,9 +151,12 @@
 	}
 
 	function selectField(fieldId) {
-		let field = document.getElementById(fieldId);
-		field.select();
-		field.setSelectionRange(0, 999999); /* For mobile devices */
+		//desktop only
+		if (typeof window.orientation == 'undefined') {
+			let field = document.getElementById(fieldId);
+			field.select();
+			field.setSelectionRange(0, 999999);
+		}
 	}
 
 	function addColorDropdownItem(changeColor, colorItem) {
