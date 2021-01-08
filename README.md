@@ -14,7 +14,7 @@ It's available on PlayStore https://play.google.com/store/apps/details?id=com.fa
 5. Export and save the file in a directory
 
 ### How to extract highlighted text?
-1. Go to https://and96.github.io/Lithium-Ebook-Highlighted-Text-Extractor/
+1. Go to https://and96.github.io/Lithium-Text-Extractor/
 2. Select file
 3. Select a color (OPTIONAL)
 4. Press "Process"
