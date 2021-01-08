@@ -3,6 +3,7 @@ Simple web interface to extract highlighted text from exported ebook data from L
 
 ### What is Lithium?
 "Lithium: EPUB Reader" is an Ebook Reader for Android devices.
+
 It's available on PlayStore https://play.google.com/store/apps/details?id=com.faultexception.reader
 
 ### How to export data from Lithium?
@@ -18,9 +19,11 @@ It's available on PlayStore https://play.google.com/store/apps/details?id=com.fa
 3. Select a color (OPTIONAL)
 4. Press "Process"
 
-# Development
+### Development
 It's written in Javascript and uses Bootstrap v5 components as Frontend. 
+
 Extraction is made with Regular Expressions.
+
 Everything is parsed in the Browser (Client side, no backend or other software required).
 
 ### Status
