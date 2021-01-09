@@ -28,5 +28,3 @@ Extraction is made with Regular Expressions.
 
 Everything is parsed in the Browser (Client side, no backend or other software required).
 
-### Status
-Work in progress
