@@ -6,7 +6,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<title>Lithium Text Extractor</title>
 </head>
 
@@ -27,7 +26,7 @@
 			<div class="col-sm">
 				<div class="mb-3">
 					<label for="inputContent" class="form-label">Content here (HTML Code)</label>
-					<textarea id="input" style="min-height: 100%" class="form-control min-vh-40" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
+					<textarea id="input-text" style="min-height: 100%" class="form-control min-vh-40" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
 				</div>
 			</div>
 		</div>
@@ -35,7 +34,7 @@
 			<div class="col-sm">
 				<div class="mb-3">
 					<div class="btn-group" role="group" aria-label="Basic outlined example">
-						<select id="color-dropdown" class="form-select" aria-label="Select color">
+						<select id="color-dropdown" class="form-select" aria-label="Select color" onchange="changeColor()">
 							<option selected>All colors</option>
 						</select>
 					</div>
@@ -48,14 +47,34 @@
 			<div class="col-sm">
 				<div class="mb-3">
 					<label for="outpuContent" class="form-label">Output (Extracted text here)</label>
-					<textarea id="output" style="height: 80%" class="form-control" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
+					<textarea id="output-text" style="height: 80%" class="form-control" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
 				</div>
 			</div>
 		</div>
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
 	<script>
+	
+	window.onload = function() {
+		document.getElementById("input-text").value = " "
+		document.getElementById("output-text").value = " "
+		document.getElementById("input-file").value = null
+		clearColorDropdownItems()
+		addColorDropdownItem(false, "All colors")
+	};
+	
 	function process() {
+		document.getElementById("output-text").value = " "
+		let input = document.getElementById("input-text").value
+		if (input.trim() == "") {
+			alert("Select a file or paste its content");
+			return
+		}
+		if (!input.includes("<html")) {
+			alert("Wrong input");
+			return
+		}
+		let output = input
 		let colorSelected = document.getElementById("color-dropdown").value
 		let listRegexNoColor = [
 			[String.raw `^(?!<div class='highlight'>).+`, ``],
@@ -92,10 +111,7 @@
 			[String.raw `  `, ` `],
 			[String.raw `(^ )|( $)`, ` `],
 		];
-		document.getElementById("output").value = " "
-		let output = document.getElementById("input").value
-		document.getElementById("output").value = " "
-		if(colorSelected.includes("#")) {
+		if (colorSelected.includes("#")) {
 			listRegex1Color.forEach(function(regexText) {
 				output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
 			});
@@ -107,23 +123,20 @@
 		listRegexFix.forEach(function(regexText) {
 			output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
 		});
-		document.getElementById("output").value = output
-		selectField("output");
+		document.getElementById("output-text").value = output
+		selectField("output-text");
 	}
-	$(".dropdown-menu ul li a").click(function() {
-		$(this).parents(".btn-group").find('.selection').text($(this).text());
-		$(this).parents(".btn-group").find('.selection').val($(this).text());
-	});
+
 	document.getElementById('input-file').addEventListener('change', getFile)
 
 	function getFile(event) {
 		const input = event.target
 		if('files' in input && input.files.length > 0) {
-			document.getElementById("input").value = " "
-			document.getElementById("output").value = " "
-			placeFileContent(document.getElementById('input'), input.files[0]);
+			document.getElementById("input-text").value = " "
+			document.getElementById("output-text").value = " "
+			placeFileContent(document.getElementById("input-text"), input.files[0]);
 			setTimeout(function() {
-				selectField("input");
+				selectField("input-text");
 				setColorFromInput();
 			}, 500);
 		}
@@ -145,7 +158,7 @@
 	}
 
 	function copy() {
-		selectField("output");
+		selectField("output-text");
 		document.execCommand("copy");
 		alert("Output copied to clipboard.");
 	}
@@ -160,28 +173,29 @@
 	}
 
 	function addColorDropdownItem(changeColor, colorItem) {
-		let list = document.getElementById("color-dropdown");
-		let option = document.createElement("option");
+		let selectColor = document.getElementById("color-dropdown");
+		let optionColor = document.createElement("option");
 		if(changeColor) {
-			option.setAttribute("style", "background-color: " + colorItem + " ");
+			optionColor.setAttribute("style", "background-color: " + colorItem + " ");
+		} else {
+			optionColor.setAttribute("style", "background-color: #ffffff");
 		}
 		let text = document.createTextNode(colorItem);
-		//alert(colorItem)
-		option.appendChild(text);
-		list.appendChild(option);
+		optionColor.appendChild(text);
+		selectColor.appendChild(optionColor);
 	}
 
-	function clearColorDropdownItems(changeColor, colorItem) {
-		let list = document.getElementById("color-dropdown");
-		while(list.firstChild) {
-			list.removeChild(list.firstChild);
+	function clearColorDropdownItems() {
+		let selectColor = document.getElementById("color-dropdown");
+		while(selectColor.firstChild) {
+			selectColor.removeChild(selectColor.firstChild);
 		}
 	}
 
 	function setColorFromInput() {
 		clearColorDropdownItems();
 		let colors = [];
-		let input = document.getElementById("input").value
+		let input = document.getElementById("input-text").value
 		input = input.replace(new RegExp(String.raw `^(?!<div class='color' style='background-color).+`, "mg"), ``);
 		input = input.replaceAll(String.raw `<div class='color' style='background-color: `, ``)
 		input = input.replaceAll(String.raw `'></div>`, ``)
@@ -198,6 +212,15 @@
 			addColorDropdownItem(true, colorsUniq[i])
 		}
 	}
+	
+	function changeColor(){
+		let selectColor = document.getElementById("color-dropdown");
+		if (selectColor.value.includes("#")) {
+			selectColor.setAttribute("style", "background-color: " + selectColor.value + " ");
+		} else {
+			selectColor.setAttribute("style", "background-color: #ffffff");
+		}
+	}
 
 	function remove_duplicates(arr) {
 		let obj = {};
@@ -210,7 +233,9 @@
 		}
 		return ret_arr;
 	}
+	
 	</script>
+
 </body>
 
 </html>
