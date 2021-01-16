@@ -36,7 +36,7 @@
 			<div class="col-sm">
 				<div class="mb-3">
 					<div class="btn-group" role="group" aria-label="Basic outlined example">
-						<select id="color-dropdown" class="form-select" aria-label="Select color" onchange="changeColor()">
+						<select id="color-dropdown" class="form-select" aria-label="Select color" onchange="changeDropdownColor()">
 							<option selected>All colors</option>
 						</select>
 					</div>
@@ -127,7 +127,9 @@
 			output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
 		});
 		document.getElementById("output-text").value = output
-		selectField("output-text");
+		if (isDesktop){
+			selectField("output-text");
+		}
 	}
 
 	document.getElementById('input-file').addEventListener('change', getFile)
@@ -139,8 +141,10 @@
 			document.getElementById("output-text").value = " "
 			placeFileContent(document.getElementById("input-text"), input.files[0]);
 			setTimeout(function() {
-				selectField("input-text");
-				setColorFromInput();
+				if (isDesktop){
+					selectField("input-text");
+				}
+				setColorsFromInput();
 			}, 500);
 		}
 	}
@@ -167,11 +171,16 @@
 	}
 
 	function selectField(fieldId) {
-		//desktop only
+		let field = document.getElementById(fieldId);
+		field.select();
+		field.setSelectionRange(0, 999999);
+	}
+	
+	function isDesktop() {
 		if (typeof window.orientation == 'undefined') {
-			let field = document.getElementById(fieldId);
-			field.select();
-			field.setSelectionRange(0, 999999);
+			return True
+		} else {
+			return False
 		}
 	}
 
@@ -195,7 +204,7 @@
 		}
 	}
 
-	function setColorFromInput() {
+	function setColorsFromInput() {
 		clearColorDropdownItems();
 		let colors = [];
 		let input = document.getElementById("input-text").value
@@ -214,9 +223,10 @@
 		for(let i = 0; i < colorsUniq.length; i++) {
 			addColorDropdownItem(true, colorsUniq[i])
 		}
+		changeDropdownColor()
 	}
 	
-	function changeColor(){
+	function changeDropdownColor(){
 		let selectColor = document.getElementById("color-dropdown");
 		if (selectColor.value.includes("#")) {
 			selectColor.setAttribute("style", "background-color: " + selectColor.value + " ");
