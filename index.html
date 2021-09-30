@@ -1,254 +1,252 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Lithium Ebook Highlighted Text Extractor" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous" />
 
-<head>
-	<meta charset="UTF-8">        
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="Lithium Ebook Highlighted Text Extractor">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <title>Lithium Text Extractor</title>
-</head>
+        <title>Lithium Text Extractor</title>
+    </head>
 
-<body>
-	<div class="container mt-4">
-		<div class="row">
-			<div class="col-sm">
-				<h1>Lithium Ebook Highlighted Text Extractor</h1>
-			</div>
-		</div>
-		<div class="row">
-			<div class="mb-3">
-				<label for="input-file" class="form-label">Select file (Exported from Lithium)</label>
-				<input id="input-file" class="form-control" type="file" >
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm">
-				<div class="mb-3">
-					<label for="input-text" class="form-label">Content here (HTML Code)</label>
-					<textarea id="input-text" style="min-height: 100%" class="form-control min-vh-40" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm">
-				<div class="mb-3">
-					<div class="btn-group" role="group" aria-label="Basic outlined example">
-						<select id="color-dropdown" class="form-select" aria-label="Select color" onchange="changeDropdownColor()">
-							<option selected>All colors</option>
-						</select>
-					</div>
-					<button type="button" class="btn btn-outline-primary btn-block" onclick="process()">Process</button>
-					<button type="button" class="btn btn-outline-success btn-block" onclick="copy()">Copy to clipboard</button>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm">
-				<div class="mb-3">
-					<label for="output-text" class="form-label">Output (Extracted text here)</label>
-					<textarea id="output-text" style="height: 80%" class="form-control" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
-				</div>
-			</div>
-		</div>
-	</div>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-	<script>
-	
-	window.onload = function() {
-		document.getElementById("input-text").value = " "
-		document.getElementById("output-text").value = " "
-		document.getElementById("input-file").value = null
-		clearColorDropdownItems()
-		addColorDropdownItem(false, "All colors")
-	};
-	
-	function process() {
-		document.getElementById("output-text").value = " "
-		let input = document.getElementById("input-text").value
-		if (input.trim() == "") {
-			alert("Select a file or paste its content");
-			return
-		}
-		if (!input.includes("<html")) {
-			alert("Wrong input");
-			return
-		}
-		let output = input
-		let colorSelected = document.getElementById("color-dropdown").value
-		let listRegexNoColor = [
-			[String.raw `^(?!<div class='highlight'>).+`, ``],
-			[String.raw `<div class='highlight'>`, ``],
-			[String.raw `</div>`, ``],
-		];
-		let listRegex1Color = [
-			[String.raw `^(?!(<div class='highlight'>)|(<div class='color')).+`, ``],
-			[String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, ``],
-			[String.raw `(<div class='color' style='background-color: ${colorSelected}'></div>)([\s\S])(<div class='highlight'>)(.*)(</div>)`, '$4'],
-			[String.raw `.*<div class='color'.*`, ``],
-			[String.raw `.*<div class='highlight'>.*`, ``],
-			[String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, ``],
-		];
-		let listRegexFix = [
-			[String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, ``],
-			[String.raw `&nbsp;`, ``],
-			[String.raw `&#10;`, ` `],
-			[String.raw `&#13;`, ` `],
-			[String.raw `&#8217;`, `'`],
-			[String.raw `&#233;`, `è`],
-			[String.raw `&#224;`, `à`],
-			[String.raw `&#242;`, `ò`],
-			[String.raw `&#249;`, `ù`],
-			[String.raw `&#232;`, `è`],
-			[String.raw `&#200;`, `è`],
-			[String.raw `&#171;`, ``],
-			[String.raw `&#187;`, ``],
-			[String.raw `&#8211;`, ``],
-			[String.raw `&#236;`, `i`],
-			[String.raw `&#8220;`, ``],
-			[String.raw `&#8221;`, ``],
-			[String.raw `&#8212;`, ``],
-			[String.raw `&#160;`, ``],
-			[String.raw `  `, ` `],
-			[String.raw `  `, ` `],
-			[String.raw `(^ )|( $)`, ` `],
-		];
-		if (colorSelected.includes("#")) {
-			listRegex1Color.forEach(function(regexText) {
-				output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
-			});
-		} else {
-			listRegexNoColor.forEach(function(regexText) {
-				output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
-			});
-		}
-		listRegexFix.forEach(function(regexText) {
-			output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
-		});
-		document.getElementById("output-text").value = output
-		if (isDesktop){
-			selectField("output-text");
-		}
-	}
+    <body>
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-sm">
+                    <h1>Lithium Ebook Highlighted Text Extractor</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3">
+                    <label for="input-file" class="form-label">Select file (Exported from Lithium)</label>
+                    <input id="input-file" class="form-control" type="file" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="mb-3">
+                        <label for="input-text" class="form-label">Content here (HTML Code)</label>
+                        <textarea id="input-text" style="min-height: 100%;" class="form-control min-vh-40" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="mb-3">
+                        <div class="btn-group" role="group" aria-label="Basic outlined example">
+                            <select id="color-dropdown" class="form-select" aria-label="Select color" onchange="changeDropdownColor()">
+                                <option selected>All colors</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-block" onclick="process()">Process</button>
+                        <button type="button" class="btn btn-outline-success btn-block" onclick="copy()">Copy to clipboard</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="mb-3">
+                        <label for="output-text" class="form-label">Output (Extracted text here)</label>
+                        <textarea id="output-text" style="height: 80%;" class="form-control" id="exampleFormControlTextarea1" rows="4" spellcheck="false"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <script>
+            window.onload = function () {
+                document.getElementById("input-text").value = " ";
+                document.getElementById("output-text").value = " ";
+                document.getElementById("input-file").value = null;
+                clearColorDropdownItems();
+                addColorDropdownItem(false, "All colors");
+            };
 
-	document.getElementById('input-file').addEventListener('change', getFile)
+            function process() {
+                document.getElementById("output-text").value = " ";
+                let input = document.getElementById("input-text").value;
+                if (input.trim() == "") {
+                    alert("Select a file or paste its content");
+                    return;
+                }
+                if (!input.includes("<html")) {
+                    alert("Wrong input");
+                    return;
+                }
+                let output = input;
+                let colorSelected = document.getElementById("color-dropdown").value;
+                let listRegexNoColor = [
+                    [String.raw`^(?!<div class='highlight'>).+`, ``],
+                    [String.raw`<div class='highlight'>`, ``],
+                    [String.raw`</div>`, ``],
+                ];
+                let listRegex1Color = [
+                    [String.raw`^(?!(<div class='highlight'>)|(<div class='color')).+`, ``],
+                    [String.raw`^(?:[\t ]*(?:\r?\n|\r))+`, ``],
+                    [String.raw`(<div class='color' style='background-color: ${colorSelected}'></div>)([\s\S])(<div class='highlight'>)(.*)(</div>)`, "$4"],
+                    [String.raw`.*<div class='color'.*`, ``],
+                    [String.raw`.*<div class='highlight'>.*`, ``],
+                    [String.raw`^(?:[\t ]*(?:\r?\n|\r))+`, ``],
+                ];
+                let listRegexFix = [
+                    [String.raw`^(?:[\t ]*(?:\r?\n|\r))+`, ``],
+                    [String.raw`&nbsp;`, ``],
+                    [String.raw`&#10;`, ` `],
+                    [String.raw`&#13;`, ` `],
+                    [String.raw`&#8217;`, `'`],
+                    [String.raw`&#233;`, `è`],
+                    [String.raw`&#224;`, `à`],
+                    [String.raw`&#242;`, `ò`],
+                    [String.raw`&#249;`, `ù`],
+                    [String.raw`&#232;`, `è`],
+                    [String.raw`&#200;`, `è`],
+                    [String.raw`&#171;`, ``],
+                    [String.raw`&#187;`, ``],
+                    [String.raw`&#8211;`, ``],
+                    [String.raw`&#236;`, `i`],
+                    [String.raw`&#8220;`, ``],
+                    [String.raw`&#8221;`, ``],
+                    [String.raw`&#8212;`, ``],
+                    [String.raw`&#160;`, ``],
+                    [String.raw`  `, ` `],
+                    [String.raw`  `, ` `],
+                    [String.raw`(^ )|( $)`, ` `],
+                ];
+                if (colorSelected.includes("#")) {
+                    listRegex1Color.forEach(function (regexText) {
+                        output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
+                    });
+                } else {
+                    listRegexNoColor.forEach(function (regexText) {
+                        output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
+                    });
+                }
+                listRegexFix.forEach(function (regexText) {
+                    output = output.replace(new RegExp(regexText[0], "gm"), regexText[1]);
+                });
+                document.getElementById("output-text").value = output;
+                if (isDesktop) {
+                    selectField("output-text");
+                }
+            }
 
-	function getFile(event) {
-		const input = event.target
-		if('files' in input && input.files.length > 0) {
-			document.getElementById("input-text").value = " "
-			document.getElementById("output-text").value = " "
-			placeFileContent(document.getElementById("input-text"), input.files[0]);
-			setTimeout(function() {
-				if (isDesktop){
-					selectField("input-text");
-				}
-				setColorsFromInput();
-			}, 500);
-		}
-	}
+            document.getElementById("input-file").addEventListener("change", getFile);
 
-	function placeFileContent(target, file) {
-		readFileContent(file).then(content => {
-			target.value = content
-		}).catch(error => console.log(error))
-	}
+            function getFile(event) {
+                const input = event.target;
+                if ("files" in input && input.files.length > 0) {
+                    document.getElementById("input-text").value = " ";
+                    document.getElementById("output-text").value = " ";
+                    placeFileContent(document.getElementById("input-text"), input.files[0]);
+                    setTimeout(function () {
+                        if (isDesktop) {
+                            selectField("input-text");
+                        }
+                        setColorsFromInput();
+                    }, 500);
+                }
+            }
 
-	function readFileContent(file) {
-		const reader = new FileReader()
-		return new Promise((resolve, reject) => {
-			reader.onload = event => resolve(event.target.result)
-			reader.onerror = error => reject(error)
-			reader.readAsText(file)
-		})
-	}
+            function placeFileContent(target, file) {
+                readFileContent(file)
+                    .then((content) => {
+                        target.value = content;
+                    })
+                    .catch((error) => console.log(error));
+            }
 
-	function copy() {
-		selectField("output-text");
-		document.execCommand("copy");
-		alert("Output copied to clipboard.");
-	}
+            function readFileContent(file) {
+                const reader = new FileReader();
+                return new Promise((resolve, reject) => {
+                    reader.onload = (event) => resolve(event.target.result);
+                    reader.onerror = (error) => reject(error);
+                    reader.readAsText(file);
+                });
+            }
 
-	function selectField(fieldId) {
-		let field = document.getElementById(fieldId);
-		field.select();
-		field.setSelectionRange(0, 999999);
-	}
-	
-	function isDesktop() {
-		if (typeof window.orientation == 'undefined') {
-			return True
-		} else {
-			return False
-		}
-	}
+            function copy() {
+                selectField("output-text");
+                document.execCommand("copy");
+                alert("Output copied to clipboard.");
+            }
 
-	function addColorDropdownItem(changeColor, colorItem) {
-		let selectColor = document.getElementById("color-dropdown");
-		let optionColor = document.createElement("option");
-		if(changeColor) {
-			optionColor.setAttribute("style", "background-color: " + colorItem + " ");
-		} else {
-			optionColor.setAttribute("style", "background-color: #ffffff");
-		}
-		let text = document.createTextNode(colorItem);
-		optionColor.appendChild(text);
-		selectColor.appendChild(optionColor);
-	}
+            function selectField(fieldId) {
+                let field = document.getElementById(fieldId);
+                field.select();
+                field.setSelectionRange(0, 999999);
+            }
 
-	function clearColorDropdownItems() {
-		let selectColor = document.getElementById("color-dropdown");
-		while(selectColor.firstChild) {
-			selectColor.removeChild(selectColor.firstChild);
-		}
-	}
+            function isDesktop() {
+                if (typeof window.orientation == "undefined") {
+                    return True;
+                } else {
+                    return False;
+                }
+            }
 
-	function setColorsFromInput() {
-		clearColorDropdownItems();
-		let colors = [];
-		let input = document.getElementById("input-text").value
-		input = input.replace(new RegExp(String.raw `^(?!<div class='color' style='background-color).+`, "mg"), ``);
-		input = input.replaceAll(String.raw `<div class='color' style='background-color: `, ``)
-		input = input.replaceAll(String.raw `'></div>`, ``)
-		input = input.replace(new RegExp(String.raw `^(?:[\t ]*(?:\r?\n|\r))+`, "mg"), ``);
-		let char = '\n';
-		let i = j = 0;
-		while((j = input.indexOf(char, i)) !== -1) {
-			colors.push(input.substring(i, j).trim());
-			i = j + 1;
-		}
-		let colorsUniq = remove_duplicates(colors)
-		addColorDropdownItem(false, "All colors")
-		for(let i = 0; i < colorsUniq.length; i++) {
-			addColorDropdownItem(true, colorsUniq[i])
-		}
-		changeDropdownColor()
-	}
-	
-	function changeDropdownColor(){
-		let selectColor = document.getElementById("color-dropdown");
-		if (selectColor.value.includes("#")) {
-			selectColor.setAttribute("style", "background-color: " + selectColor.value + " ");
-		} else {
-			selectColor.setAttribute("style", "background-color: #ffffff");
-		}
-	}
+            function addColorDropdownItem(changeColor, colorItem) {
+                let selectColor = document.getElementById("color-dropdown");
+                let optionColor = document.createElement("option");
+                if (changeColor) {
+                    optionColor.setAttribute("style", "background-color: " + colorItem + " ");
+                } else {
+                    optionColor.setAttribute("style", "background-color: #ffffff");
+                }
+                let text = document.createTextNode(colorItem);
+                optionColor.appendChild(text);
+                selectColor.appendChild(optionColor);
+            }
 
-	function remove_duplicates(arr) {
-		let obj = {};
-		let ret_arr = [];
-		for(let i = 0; i < arr.length; i++) {
-			obj[arr[i]] = true;
-		}
-		for(let key in obj) {
-			ret_arr.push(key);
-		}
-		return ret_arr;
-	}
-	
-	</script>
+            function clearColorDropdownItems() {
+                let selectColor = document.getElementById("color-dropdown");
+                while (selectColor.firstChild) {
+                    selectColor.removeChild(selectColor.firstChild);
+                }
+            }
 
-</body>
+            function setColorsFromInput() {
+                clearColorDropdownItems();
+                let colors = [];
+                let input = document.getElementById("input-text").value;
+                input = input.replace(new RegExp(String.raw`^(?!<div class='color' style='background-color).+`, "mg"), ``);
+                input = input.replaceAll(String.raw`<div class='color' style='background-color: `, ``);
+                input = input.replaceAll(String.raw`'></div>`, ``);
+                input = input.replace(new RegExp(String.raw`^(?:[\t ]*(?:\r?\n|\r))+`, "mg"), ``);
+                let char = "\n";
+                let i = (j = 0);
+                while ((j = input.indexOf(char, i)) !== -1) {
+                    colors.push(input.substring(i, j).trim());
+                    i = j + 1;
+                }
+                let colorsUniq = remove_duplicates(colors);
+                addColorDropdownItem(false, "All colors");
+                for (let i = 0; i < colorsUniq.length; i++) {
+                    addColorDropdownItem(true, colorsUniq[i]);
+                }
+                changeDropdownColor();
+            }
 
+            function changeDropdownColor() {
+                let selectColor = document.getElementById("color-dropdown");
+                if (selectColor.value.includes("#")) {
+                    selectColor.setAttribute("style", "background-color: " + selectColor.value + " ");
+                } else {
+                    selectColor.setAttribute("style", "background-color: #ffffff");
+                }
+            }
+
+            function remove_duplicates(arr) {
+                let obj = {};
+                let ret_arr = [];
+                for (let i = 0; i < arr.length; i++) {
+                    obj[arr[i]] = true;
+                }
+                for (let key in obj) {
+                    ret_arr.push(key);
+                }
+                return ret_arr;
+            }
+        </script>
+    </body>
 </html>
