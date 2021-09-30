@@ -3,6 +3,9 @@ Simple web interface to extract highlighted text from exported ebook data from L
 
 Available here: https://and96.github.io/Lithium-Text-Extractor/
 
+### Screenshots
+<img src="https://raw.githubusercontent.com/And96/Lithium-Text-Extractor/main/Screenshot.jpg" width="80%">
+
 ### What is Lithium?
 "Lithium: EPUB Reader" is an Ebook Reader for Android devices.
 
